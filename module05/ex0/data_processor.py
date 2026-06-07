@@ -7,7 +7,7 @@ import abc
 
 class DataProcessor(abc.ABC):
     def __init__(self) -> None:
-        self.data = []
+        self.stock = []
 
     def output(self, data: typing.Any) -> typing.Any:
         pass
@@ -35,14 +35,18 @@ class NumericProcessor(DataProcessor):
             if all(isinstance(x, (int, float)) for x in data):
                 return True
             else:
-                raise ValueError("Invalid data type for NumericProcessor:"
-                                 " list contains non-numeric values")
+                return False
         else:
-            raise ValueError("Invalid data type for NumericProcessor")
-        return False
+            return False
 
     def ingest(self, data: typing.Any) -> None:
-        pass
+        if self.validate(data):
+            if isinstance(data, list):
+                self.stock.extend(str(x) for x in data)
+            else:
+                self.stock.append(str(data))
+        else:
+            raise ValueError("Invalid data type for NumericProcessor")
 
 
 class TextProcessor(DataProcessor):
@@ -56,13 +60,15 @@ class TextProcessor(DataProcessor):
         return isinstance(data, str)
 
     def ingest(self, data: typing.Any) -> None:
-        pass
+        if self.validate(data):
+            self.data.append(data)
+        else:
+            raise ValueError("Invalid data type for TextProcessor")
 
 
 class LogProcessor(DataProcessor):
     def __init__(self) -> None:
         super().__init__()
-        self.data = []
 
     def output(self, data: typing.Any) -> typing.Any:
         pass
@@ -71,4 +77,7 @@ class LogProcessor(DataProcessor):
         return isinstance(data, (int, float, str))
 
     def ingest(self, data: typing.Any) -> None:
-        self.data.append(data)
+        if self.validate(data):
+            self.data.append(data)
+        else:
+            raise ValueError("Invalid data type for LogProcessor")
